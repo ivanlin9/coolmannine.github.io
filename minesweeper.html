@@ -25,27 +25,66 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle, rgba(255,255,255,0) 0%, rgba(0,0,0,1) 100%);
+      background: black;
       z-index: 1000;
-      animation: warp-animation 3s ease-in-out forwards;
       pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .warp-gradient {
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(
+        circle at center, 
+        white 0%, 
+        rgba(200,200,200,0.5) 20%, 
+        rgba(100,100,100,0.3) 40%, 
+        rgba(50,50,50,0.2) 60%, 
+        rgba(0,0,0,0.1) 80%, 
+        black 100%
+      );
+      animation: warp-animation 6s ease-in-out forwards;
+    }
+
+    .warp-lines {
+      position: absolute;
+      width: 300%;
+      height: 300%;
+      background: 
+        repeating-linear-gradient(
+          0deg, 
+          rgba(255,255,255,0.05) 0, 
+          rgba(255,255,255,0.05) 1px, 
+          transparent 1px, 
+          transparent 10px
+        ),
+        repeating-linear-gradient(
+          90deg, 
+          rgba(255,255,255,0.05) 0, 
+          rgba(255,255,255,0.05) 1px, 
+          transparent 1px, 
+          transparent 10px
+        );
+      opacity: 0.5;
+      animation: rotate-lines 5s linear infinite;
+    }
+
+    @keyframes rotate-lines {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     @keyframes warp-animation {
       0% {
         transform: scale(1);
         opacity: 1;
-        background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(0,0,0,0) 10%);
-      }
-      50% {
-        transform: scale(20);
-        opacity: 0.8;
-        background: radial-gradient(circle, rgba(100,100,100,1) 0%, rgba(0,0,0,1) 30%);
       }
       100% {
         transform: scale(50);
         opacity: 0;
-        background: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 100%);
       }
     }
 
@@ -56,11 +95,13 @@
       transform: translate(-50%, -50%);
       font-family: 'Orbitron', sans-serif;
       font-size: 6rem;
-      color: rgba(50, 50, 50, 0.5);
-      z-index: 999;
-      text-shadow: 0 0 20px rgba(100, 100, 100, 0.3);
+      color: rgba(200, 200, 200, 0.7);
+      z-index: 1001;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
       opacity: 0;
-      animation: title-appear 2s 1.5s forwards;
+      animation: 
+        title-appear 2s 0.5s forwards,
+        title-move 2s 4s forwards;
     }
 
     @keyframes title-appear {
@@ -74,9 +115,23 @@
       }
     }
 
+    /* Title now ends higher on the screen (5% from the top) */
+    @keyframes title-move {
+      0% {
+        top: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        top: 5%;
+        transform: translate(-50%, 0) scale(0.5);
+        opacity: 0.5;
+      }
+    }
+
     #game-container {
       opacity: 0;
-      animation: game-appear 1s 3s forwards;
+      animation: game-appear 1s 6s forwards;
       display: inline-block;
       border: 2px solid silver;
       padding: 10px;
@@ -94,6 +149,17 @@
     }
 
     .controls {
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Stopwatch styling */
+    #stopwatch {
+      color: red;
+      font-family: monospace;
+      font-size: 1.5rem;
       margin-bottom: 10px;
     }
 
@@ -140,21 +206,25 @@
     .cell.num-6 { color: turquoise; }
     .cell.num-7 { color: purple; }
     .cell.num-8 { color: black; }
-
   </style>
 </head>
 <body>
-  <div id="warp-container"></div>
+  <div id="warp-container">
+    <div class="warp-gradient"></div>
+    <div class="warp-lines"></div>
+  </div>
   <div id="title">Sweeper</div>
 
   <div id="game-container">
     <div class="controls">
       <button onclick="resetGame()">New Game</button>
+      <div id="stopwatch">00:00:00</div>
     </div>
     <div id="grid"></div>
   </div>
   
   <script>
+    // Game Variables
     const rows = 16;
     const cols = 16;
     const minesCount = 40;
@@ -162,6 +232,32 @@
     let revealedCount = 0;
     let gameOver = false;
     
+    // Stopwatch Variables
+    let stopwatchInterval;
+    let startTime;
+    
+    // Start or restart the stopwatch
+    function startStopwatch() {
+      clearInterval(stopwatchInterval);
+      startTime = Date.now();
+      stopwatchInterval = setInterval(function(){
+        const elapsed = Date.now() - startTime;
+        const minutes = Math.floor(elapsed / 60000);
+        const seconds = Math.floor((elapsed % 60000) / 1000);
+        const centiseconds = Math.floor((elapsed % 1000) / 10);
+        document.getElementById("stopwatch").textContent =
+          (minutes < 10 ? "0" + minutes : minutes) + ":" +
+          (seconds < 10 ? "0" + seconds : seconds) + ":" +
+          (centiseconds < 10 ? "0" + centiseconds : centiseconds);
+      }, 10);
+    }
+    
+    // Stop the stopwatch
+    function stopStopwatch() {
+      clearInterval(stopwatchInterval);
+    }
+    
+    // Create and initialize the grid
     function createGrid() {
       grid = [];
       revealedCount = 0;
@@ -173,7 +269,13 @@
       for (let i = 0; i < rows; i++) {
         grid[i] = [];
         for (let j = 0; j < cols; j++) {
-          grid[i][j] = { mine: false, revealed: false, flagged: false, adjacentMines: 0, element: null };
+          grid[i][j] = { 
+            mine: false, 
+            revealed: false, 
+            flagged: false, 
+            adjacentMines: 0, 
+            element: null 
+          };
           const cell = document.createElement("div");
           cell.classList.add("cell");
           cell.setAttribute("data-row", i);
@@ -188,7 +290,8 @@
       placeMines();
       calculateNumbers();
     }
-
+    
+    // Randomly place mines on the grid
     function placeMines() {
       let placed = 0;
       while (placed < minesCount) {
@@ -200,7 +303,8 @@
         }
       }
     }
-
+    
+    // Calculate the adjacent mine count for each cell
     function calculateNumbers() {
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
@@ -219,14 +323,20 @@
         }
       }
     }
-
+    
+    // Handle left-click on a cell (or chord if already revealed)
     function handleClick(event) {
       const row = parseInt(event.currentTarget.getAttribute("data-row"));
       const col = parseInt(event.currentTarget.getAttribute("data-col"));
       if (gameOver) return;
-      revealCell(row, col);
+      if (grid[row][col].revealed) {
+        chordCell(row, col);
+      } else {
+        revealCell(row, col);
+      }
     }
-
+    
+    // Handle right-click to toggle flag
     function handleRightClick(event) {
       event.preventDefault();
       const row = parseInt(event.currentTarget.getAttribute("data-row"));
@@ -234,43 +344,149 @@
       if (gameOver) return;
       toggleFlag(row, col);
     }
-
+    
+    // Global keydown: use the cell that is currently hovered over.
     document.addEventListener("keydown", function(event) {
       const hovered = document.querySelector(".cell:hover");
       if (!hovered || gameOver) return;
       const row = parseInt(hovered.getAttribute("data-row"));
       const col = parseInt(hovered.getAttribute("data-col"));
-      
-      if (event.key === "f") revealCell(row, col);
-      if (event.key === "d") toggleFlag(row, col);
+      if (event.key === "f" || event.key === "F") {
+        if (!grid[row][col].revealed) {
+          revealCell(row, col);
+        } else {
+          chordCell(row, col);
+        }
+      } else if (event.key === "d" || event.key === "D") {
+        toggleFlag(row, col);
+      }
     });
-
+    
+    // Reveal a cell; if it is empty, recursively reveal its neighbors.
     function revealCell(row, col) {
+      if (row < 0 || row >= rows || col < 0 || col >= cols) return;
       if (grid[row][col].revealed || grid[row][col].flagged) return;
+      
       grid[row][col].revealed = true;
       const cell = grid[row][col].element;
       cell.classList.add("revealed");
-
+      
       if (grid[row][col].mine) {
         cell.classList.add("mine");
         cell.textContent = "💣";
-        gameOver = true;
-      } else if (grid[row][col].adjacentMines > 0) {
+        endGame(false);
+        return;
+      }
+      
+      revealedCount++;
+      if (grid[row][col].adjacentMines > 0) {
         cell.textContent = grid[row][col].adjacentMines;
         cell.classList.add("num-" + grid[row][col].adjacentMines);
+      } else {
+        // Flood fill: reveal all neighboring cells if this one is empty.
+        for (let x = -1; x <= 1; x++) {
+          for (let y = -1; y <= 1; y++) {
+            const ni = row + x;
+            const nj = col + y;
+            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && !grid[ni][nj].revealed) {
+              revealCell(ni, nj);
+            }
+          }
+        }
       }
+      checkWin();
     }
-
+    
+    // Toggle the flag on a cell.
     function toggleFlag(row, col) {
       if (grid[row][col].revealed) return;
       grid[row][col].flagged = !grid[row][col].flagged;
-      grid[row][col].element.classList.toggle("flag");
-      grid[row][col].element.textContent = grid[row][col].flagged ? "🚩" : "";
+      const cell = grid[row][col].element;
+      cell.classList.toggle("flag");
+      cell.textContent = grid[row][col].flagged ? "🚩" : "";
     }
-
-    function resetGame() { createGrid(); }
-
+    
+    // Chord a revealed cell: if the number of flagged neighbors equals its number, reveal its neighbors.
+    function chordCell(row, col) {
+      if (!grid[row][col].revealed || grid[row][col].adjacentMines === 0) return;
+      let flaggedCount = 0;
+      for (let x = -1; x <= 1; x++) {
+        for (let y = -1; y <= 1; y++) {
+          const ni = row + x;
+          const nj = col + y;
+          if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && grid[ni][nj].flagged) {
+            flaggedCount++;
+          }
+        }
+      }
+      if (flaggedCount === grid[row][col].adjacentMines) {
+        for (let x = -1; x <= 1; x++) {
+          for (let y = -1; y <= 1; y++) {
+            const ni = row + x;
+            const nj = col + y;
+            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
+              if (!grid[ni][nj].flagged && !grid[ni][nj].revealed) {
+                revealCell(ni, nj);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Check if the win condition is met (all non-mine cells revealed).
+    function checkWin() {
+      if (revealedCount === rows * cols - minesCount) {
+        endGame(true);
+      }
+    }
+    
+    // Force reveal all cells – used when the game is lost.
+    function forceRevealAll() {
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (!grid[i][j].revealed) {
+            grid[i][j].revealed = true;
+            const cell = grid[i][j].element;
+            cell.classList.add("revealed");
+            // Remove any flag so that the cell is properly revealed.
+            grid[i][j].flagged = false;
+            cell.classList.remove("flag");
+            if (grid[i][j].mine) {
+              cell.classList.add("mine");
+              cell.textContent = "💣";
+            } else if (grid[i][j].adjacentMines > 0) {
+              cell.textContent = grid[i][j].adjacentMines;
+              cell.classList.add("num-" + grid[i][j].adjacentMines);
+            } else {
+              cell.textContent = "";
+            }
+          }
+        }
+      }
+    }
+    
+    // End the game – if won, show a win message; if lost, reveal all cells and show a game over message.
+    function endGame(won) {
+      gameOver = true;
+      stopStopwatch();
+      if (won) {
+        setTimeout(() => alert("You win!"), 10);
+      } else {
+        forceRevealAll();
+        setTimeout(() => alert("Game Over!"), 10);
+      }
+    }
+    
+    // Reset the game and start the stopwatch.
+    function resetGame() {
+      createGrid();
+      startStopwatch();
+    }
+    
+    // Start the game when the page loads.
     createGrid();
+    startStopwatch();
   </script>
 </body>
 </html>
