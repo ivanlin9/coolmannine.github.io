@@ -81,16 +81,20 @@
   </style>
   <script>
     let secretClicks = 0;
-    
+  
     function trackTitleClicks() {
       secretClicks++;
-      if (secretClicks >= 4) {
+      if (secretClicks === 4) {
+        // Exactly 4 clicks: unlock secret
         localStorage.setItem("secretUnlocked", "true");
+      } else if (secretClicks > 4) {
+        // More than 4 clicks: reset counter and remove secret
+        secretClicks = 0;
+        localStorage.removeItem("secretUnlocked");
       }
     }
-
-    // Wait for the DOM to load before adding the event listener to the title.
-    document.addEventListener("DOMContentLoaded", function () {
+  
+    document.addEventListener("DOMContentLoaded", function() {
       document.querySelector("h1").addEventListener("click", trackTitleClicks);
     });
   </script>
