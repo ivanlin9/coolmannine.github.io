@@ -1,70 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog</title>
-    <style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog</title>
+  <style>
     * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
     body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        color: #333;
-        text-align: center;
-        margin-top: 20px;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      text-align: center;
+      margin-top: 20px;
     }
     h1 {
-        font-family: 'Georgia', serif;
-        font-size: 3rem;
-        margin-bottom: 3rem; /* Added more space under the heading */
+      font-family: 'Georgia', serif;
+      font-size: 3rem;
+      margin-bottom: 3rem; /* Added more space under the heading */
     }
     .nav-link {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 1rem;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1rem;
     }
     a {
-        color: #333;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        background-color: #ddd;
-        border-radius: 5px;
-        transition: background-color 0.3s;
+      color: #333;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      background-color: #ddd;
+      border-radius: 5px;
+      transition: background-color 0.3s;
     }
     a:hover {
-        background-color: #bbb;
+      background-color: #bbb;
     }
     .blog-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        text-align: left;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: left;
     }
     .blog-post {
-        margin-bottom: 3rem; /* Space between blog posts */
-        padding: 1rem;
-        background-color: #f9f9f9;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+      margin-bottom: 3rem; /* Space between blog posts */
+      padding: 1rem;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
-    </style>
+  </style>
+  <script>
+    function checkSecret() {
+      if (localStorage.getItem("secretUnlocked") === "true") {
+        localStorage.removeItem("secretUnlocked"); // Reset secret access
+        window.location.href = "/minesweeper.html"; 
+      } else {
+        window.location.href = "/home.html";
+      }
+    }
+  </script>
 </head>
 <body>
-    <div class="nav-link">
-        <a href="/home.html">Home</a>
+  <div class="nav-link">
+    <a href="#" onclick="checkSecret()">Home</a>
+  </div>
+  <h1>Blog</h1>
+  <div class="blog-container">
+    <!-- First Blog Post Placeholder -->
+    <div class="blog-post">
+      <h2></h2>
+      <p></p>
     </div>
-    <h1>Blog</h1>
-    <div class="blog-container">
-        <!-- First Blog Post Placeholder -->
-        <div class="blog-post">
-            <h2></h2>
-            <p></p>
-        </div>
-    </div>
+  </div>
 </body>
 </html>
