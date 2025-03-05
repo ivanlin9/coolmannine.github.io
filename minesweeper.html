@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Minesweeper</title>
   <style>
     body {
@@ -13,6 +13,13 @@
     }
     h1 {
       font-size: 2rem;
+    }
+    /* Center the game container and give it a silver border */
+    #game-container {
+      display: inline-block;
+      border: 2px solid silver;
+      padding: 10px;
+      margin-top: 20px;
     }
     .controls {
       margin-bottom: 10px;
@@ -46,14 +53,25 @@
     .cell.flag {
       background-color: orange;
     }
+    /* Number coloring */
+    .cell.num-1 { color: blue; }
+    .cell.num-2 { color: green; }
+    .cell.num-3 { color: red; }
+    .cell.num-4 { color: darkblue; }
+    .cell.num-5 { color: brown; }
+    .cell.num-6 { color: turquoise; }
+    .cell.num-7 { color: purple; }
+    .cell.num-8 { color: black; }
   </style>
 </head>
 <body>
   <h1>Minesweeper</h1>
-  <div class="controls">
-    <button onclick="resetGame()">New Game</button>
+  <div id="game-container">
+    <div class="controls">
+      <button onclick="resetGame()">New Game</button>
+    </div>
+    <div id="grid"></div>
   </div>
-  <div id="grid"></div>
   
   <script>
     const rows = 16;
@@ -62,7 +80,7 @@
     let grid = [];
     let revealedCount = 0;
     let gameOver = false;
-
+    
     // Create and initialize the grid
     function createGrid() {
       grid = [];
@@ -71,34 +89,34 @@
       const gridElement = document.getElementById("grid");
       gridElement.innerHTML = "";
       gridElement.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
-
+      
       // Create each cell in the grid
       for (let i = 0; i < rows; i++) {
         grid[i] = [];
         for (let j = 0; j < cols; j++) {
-          grid[i][j] = {
-            mine: false,
-            revealed: false,
-            flagged: false,
-            adjacentMines: 0,
-            element: null
+          grid[i][j] = { 
+            mine: false, 
+            revealed: false, 
+            flagged: false, 
+            adjacentMines: 0, 
+            element: null 
           };
           const cell = document.createElement("div");
           cell.classList.add("cell");
           cell.setAttribute("data-row", i);
           cell.setAttribute("data-col", j);
-          cell.setAttribute("tabindex", "0"); // Make cell focusable for keyboard events
+          // When clicked, simply call the click handler.
           cell.addEventListener("click", handleClick);
           cell.addEventListener("contextmenu", handleRightClick);
-          cell.addEventListener("keydown", handleKey);
           grid[i][j].element = cell;
           gridElement.appendChild(cell);
         }
       }
+      
       placeMines();
       calculateNumbers();
     }
-
+    
     // Randomly place mines in the grid
     function placeMines() {
       let placed = 0;
@@ -111,8 +129,8 @@
         }
       }
     }
-
-    // For each cell, count the adjacent mines
+    
+    // Calculate numbers for non-mine cells
     function calculateNumbers() {
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
@@ -131,21 +149,20 @@
         }
       }
     }
-
-    // Handle left-click or cell selection
+    
+    // Handle left-click on a cell (based on the cell's event target)
     function handleClick(event) {
       const row = parseInt(event.currentTarget.getAttribute("data-row"));
       const col = parseInt(event.currentTarget.getAttribute("data-col"));
       if (gameOver) return;
-      // If cell is already revealed, try to chord
       if (grid[row][col].revealed) {
         chordCell(row, col);
       } else {
         revealCell(row, col);
       }
     }
-
-    // Handle right-click to toggle flag
+    
+    // Handle right-click to toggle flag on a cell
     function handleRightClick(event) {
       event.preventDefault();
       const row = parseInt(event.currentTarget.getAttribute("data-row"));
@@ -153,26 +170,27 @@
       if (gameOver) return;
       toggleFlag(row, col);
     }
-
-    // Handle keyboard events for focused cell
-    function handleKey(event) {
-      if (gameOver) return;
-      const row = parseInt(event.currentTarget.getAttribute("data-row"));
-      const col = parseInt(event.currentTarget.getAttribute("data-col"));
+    
+    // Global keyboard event: use the cell currently being hovered over.
+    document.addEventListener("keydown", function(event) {
+      // Get the cell that the mouse is currently hovering on.
+      const hovered = document.querySelector(".cell:hover");
+      if (!hovered || gameOver) return;
+      const row = parseInt(hovered.getAttribute("data-row"));
+      const col = parseInt(hovered.getAttribute("data-col"));
+      
       if (event.key === "f" || event.key === "F") {
-        // "f" key: reveal cell (or chord if already revealed)
         if (!grid[row][col].revealed) {
           revealCell(row, col);
         } else {
           chordCell(row, col);
         }
       } else if (event.key === "d" || event.key === "D") {
-        // "d" key: toggle flag
         toggleFlag(row, col);
       }
-    }
-
-    // Reveal a cell and perform recursive clearing if needed
+    });
+    
+    // Reveal a cell and, if needed, recursively clear empty neighbors
     function revealCell(row, col) {
       if (row < 0 || row >= rows || col < 0 || col >= cols) return;
       if (grid[row][col].revealed || grid[row][col].flagged) return;
@@ -187,37 +205,35 @@
         endGame(false);
         return;
       }
-
+      
       revealedCount++;
       if (grid[row][col].adjacentMines > 0) {
         cell.textContent = grid[row][col].adjacentMines;
+        cell.classList.add("num-" + grid[row][col].adjacentMines);
       } else {
-        // No adjacent mines – recursively reveal neighbors
+        // Recursively reveal all neighboring cells if there are no adjacent mines.
         for (let x = -1; x <= 1; x++) {
           for (let y = -1; y <= 1; y++) {
             const ni = row + x;
             const nj = col + y;
-            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
-              if (!grid[ni][nj].revealed) {
-                revealCell(ni, nj);
-              }
+            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && !grid[ni][nj].revealed) {
+              revealCell(ni, nj);
             }
           }
         }
       }
       checkWin();
     }
-
-    // Toggle flag on a cell
+    
+    // Toggle a flag on a cell
     function toggleFlag(row, col) {
-      const cellData = grid[row][col];
-      if (cellData.revealed) return;
-      cellData.flagged = !cellData.flagged;
-      const cell = cellData.element;
+      if (grid[row][col].revealed) return;
+      grid[row][col].flagged = !grid[row][col].flagged;
+      const cell = grid[row][col].element;
       cell.classList.toggle("flag");
-      cell.textContent = cellData.flagged ? "🚩" : "";
+      cell.textContent = grid[row][col].flagged ? "🚩" : "";
     }
-
+    
     // Chord a revealed cell: if the number of flagged neighbors equals the cell's number, reveal all other adjacent cells
     function chordCell(row, col) {
       if (!grid[row][col].revealed || grid[row][col].adjacentMines === 0) return;
@@ -226,8 +242,8 @@
         for (let y = -1; y <= 1; y++) {
           const ni = row + x;
           const nj = col + y;
-          if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
-            if (grid[ni][nj].flagged) flaggedCount++;
+          if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && grid[ni][nj].flagged) {
+            flaggedCount++;
           }
         }
       }
@@ -245,15 +261,15 @@
         }
       }
     }
-
-    // Check win condition: all non-mine cells revealed
+    
+    // Check if the win condition has been met (all non-mine cells revealed)
     function checkWin() {
       if (revealedCount === rows * cols - minesCount) {
         endGame(true);
       }
     }
-
-    // End the game, revealing all mines if lost
+    
+    // End the game by setting the gameOver flag and revealing all mines if lost
     function endGame(won) {
       gameOver = true;
       if (won) {
@@ -271,12 +287,12 @@
         }
       }
     }
-
-    // Reset the game by creating a new randomized grid
+    
+    // Reset the game and generate a new randomized board
     function resetGame() {
       createGrid();
     }
-
+    
     // Start the game when the page loads
     createGrid();
   </script>
