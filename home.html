@@ -1,75 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ivan Lin Personal Website</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    
-    <style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ivan Lin Personal Website</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
     * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
     body {
-        font-family: Arial, sans-serif;
-        line-height: 1.6;
-        color: #333;
-        text-align: center;
-        margin-top: 20px;
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      text-align: center;
+      margin-top: 20px;
     }
     h1 {
-        font-family: 'Georgia', serif;
-        font-size: 3rem;
-        margin-bottom: 1.5rem;
-        cursor: pointer; /* Makes it clear the title is clickable */
+      font-family: 'Georgia', serif;
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+      cursor: pointer; /* Indicates the title is clickable */
+    }
+    .email {
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
     }
     .blog-link {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 1rem;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1rem;
     }
     a {
-        color: #333;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        background-color: #ddd;
-        border-radius: 5px;
-        transition: background-color 0.3s;
+      color: #333;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      background-color: #ddd;
+      border-radius: 5px;
+      transition: background-color 0.3s;
     }
     a:hover {
-        background-color: #bbb;
+      background-color: #bbb;
     }
-    </style>
-
-    <script>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: left;
+    }
+    .grants-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      margin-bottom: 0.5rem;
+      display: inline-block;
+    }
+    .extract {
+      margin-top: 2rem;
+      padding: 1rem;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+  <script>
     let secretClicks = 0;
-
+    
     function trackTitleClicks() {
-        secretClicks++;
-        if (secretClicks >= 4) {
-            localStorage.setItem("secretUnlocked", "true");
-        }
+      secretClicks++;
+      if (secretClicks >= 4) {
+        localStorage.setItem("secretUnlocked", "true");
+      }
     }
 
+    // Wait for the DOM to load before adding the event listener to the title.
     document.addEventListener("DOMContentLoaded", function () {
-        document.querySelector("h1").addEventListener("click", trackTitleClicks);
+      document.querySelector("h1").addEventListener("click", trackTitleClicks);
     });
-    </script>
+  </script>
 </head>
-
 <body>
-    <div class="blog-link">
-        <a href="/blog.html">Blog</a>
+  <div class="blog-link">
+    <a href="/blog.html">Blog</a>
+  </div>
+  <h1>Ivan Lin</h1>
+  <div class="container">
+    <div class="email">Email: ivanlin1818@gmail.com</div>
+    <div class="grants">
+      <div class="grants-title">Grants</div>
+      <p>Received a Grant from Emergent Ventures in 2024</p>
     </div>
-    <h1>Ivan Lin</h1>
-    <div class="container">
-        <div class="email">Email: ivanlin1818@gmail.com</div>
-        <div class="grants">
-            <p>Received a Grant from Emergent Ventures in 2024</p>
-        </div>
+    <div class="extract">
+      <p>I went to the shops in the morning. I needed milk, bread, and some tea. The shop was quiet, just the grocer and an old woman buying eggs. I waited my turn, paid for the things, and walked back. When I got home, I put the kettle on and arranged the groceries in their proper places. Then I sat down and looked out the window for a while. There wasn’t much happening. A dog walked by, sniffing at the fence. After that, I started sorting my stamp collection. It took up most of the afternoon.</p>
     </div>
+  </div>
 </body>
 </html>
