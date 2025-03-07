@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sweeper</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
@@ -19,6 +19,7 @@
       background-color: black;
     }
 
+    /* Warp container is z-index 1000 */
     #warp-container {
       position: fixed;
       top: 0;
@@ -88,6 +89,7 @@
       }
     }
 
+    /* Title is z-index 1001 */
     #title {
       position: fixed;
       top: 50%;
@@ -99,7 +101,7 @@
       z-index: 1001;
       text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
       opacity: 0;
-      animation: 
+      animation:
         title-appear 2s 0.5s forwards,
         title-move 2s 4s forwards;
     }
@@ -115,7 +117,6 @@
       }
     }
 
-    /* Title now ends higher on the screen (5% from the top) */
     @keyframes title-move {
       0% {
         top: 50%;
@@ -129,7 +130,7 @@
       }
     }
 
-    /* Changed background to white so grid is visible */
+    /* Game container is now z-index 1002, above warp and title */
     #game-container {
       opacity: 0;
       animation: game-appear 1s 6s forwards;
@@ -141,6 +142,7 @@
       left: 50%;
       transform: translate(-50%, -50%);
       background: white;
+      z-index: 1002;
     }
 
     @keyframes game-appear {
@@ -407,7 +409,7 @@
       cell.textContent = grid[row][col].flagged ? "🚩" : "";
     }
     
-    // Chord a revealed cell: if the number of flagged neighbors equals its number, reveal its neighbors.
+    // Chord a revealed cell: if flagged neighbors = its number, reveal neighbors
     function chordCell(row, col) {
       if (!grid[row][col].revealed || grid[row][col].adjacentMines === 0) return;
       let flaggedCount = 0;
@@ -435,14 +437,14 @@
       }
     }
     
-    // Check if the win condition is met (all non-mine cells revealed).
+    // Check if all non-mine cells are revealed => win
     function checkWin() {
       if (revealedCount === rows * cols - minesCount) {
         endGame(true);
       }
     }
     
-    // Force reveal all cells – used when the game is lost.
+    // Reveal all squares (when losing)
     function forceRevealAll() {
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
@@ -450,7 +452,7 @@
             grid[i][j].revealed = true;
             const cell = grid[i][j].element;
             cell.classList.add("revealed");
-            // Remove any flag so that the cell is properly revealed.
+            // Remove any flag
             grid[i][j].flagged = false;
             cell.classList.remove("flag");
             if (grid[i][j].mine) {
@@ -467,7 +469,7 @@
       }
     }
     
-    // End the game – if won, show a win message; if lost, reveal all cells and show a game over message.
+    // End the game
     function endGame(won) {
       gameOver = true;
       stopStopwatch();
@@ -479,13 +481,13 @@
       }
     }
     
-    // Reset the game and start the stopwatch.
+    // Reset the game (also restarts the stopwatch)
     function resetGame() {
       createGrid();
       startStopwatch();
     }
     
-    // Start the game when the page loads.
+    // Start the game on page load
     createGrid();
     startStopwatch();
   </script>
