@@ -322,10 +322,7 @@
   </div>
   
   <script>
-    // --- Secret Title Click Logic (from home.html) ---
-    // This code should be on your home page.
-    // For the Sweeper page, we assume the secret flag is already set in localStorage.
-    // If it is not set, the PLAY button will simply redirect to home.
+
     
     // --- Menu Event Listeners ---
     const playButton = document.getElementById("play-button");
@@ -337,17 +334,7 @@
     const resetButton = document.getElementById("reset-button");
     const stopwatchElement = document.getElementById("stopwatch");
     
-    playButton.addEventListener("click", function() {
-      // Instead of showing an alert, if secret is not set, redirect to home.
-      if (localStorage.getItem("secretUnlocked") === "true") {
-        // Optionally, clear the flag after successful access.
-        localStorage.removeItem("secretUnlocked");
-        playButton.style.display = "none";
-        difficultyContainer.style.display = "flex";
-      } else {
-        window.location.href = "/home.html";
-      }
-    });
+
     
     document.querySelectorAll(".difficulty-button").forEach(button => {
       button.addEventListener("click", function() {
