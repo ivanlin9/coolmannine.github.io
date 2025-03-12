@@ -322,8 +322,11 @@
   </div>
   
   <script>
+    // --- Secret Title Click Logic (from home.html) ---
+    // This code is assumed to run on the home page.
+    // Once the secret flag is set, it is stored in localStorage.
+    // The Sweeper page does not check it further.
 
-    
     // --- Menu Event Listeners ---
     const playButton = document.getElementById("play-button");
     const difficultyContainer = document.getElementById("difficulty-container");
@@ -334,7 +337,11 @@
     const resetButton = document.getElementById("reset-button");
     const stopwatchElement = document.getElementById("stopwatch");
     
-
+    // Remove secret check here – assume that if the Sweeper page loads, the secret was already verified.
+    playButton.addEventListener("click", function() {
+      playButton.style.display = "none";
+      difficultyContainer.style.display = "flex";
+    });
     
     document.querySelectorAll(".difficulty-button").forEach(button => {
       button.addEventListener("click", function() {
