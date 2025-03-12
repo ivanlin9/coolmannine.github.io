@@ -20,7 +20,7 @@
       background-color: black;
     }
 
-    /* Warp container is z-index 1000 */
+    /* Warp container (z-index 1000) */
     #warp-container {
       position: fixed;
       top: 0;
@@ -90,7 +90,7 @@
       }
     }
 
-    /* Title is z-index 1001 */
+    /* Title (z-index 1001) */
     #title {
       position: fixed;
       top: 50%;
@@ -118,6 +118,7 @@
       }
     }
 
+    /* Title now moves up and ends at 5% from the top */
     @keyframes title-move {
       0% {
         top: 50%;
@@ -131,7 +132,7 @@
       }
     }
 
-    /* Menu screen */
+    /* Menu screen (z-index 1002) - fades in after 6s */
     #menu-container {
       display: flex;
       flex-direction: column;
@@ -144,6 +145,11 @@
       height: 100%;
       background: rgba(0, 0, 0, 0.8);
       z-index: 1002;
+      opacity: 0;
+      animation: menu-appear 1s 6s forwards;
+    }
+    @keyframes menu-appear {
+      to { opacity: 1; }
     }
 
     #play-button {
@@ -190,7 +196,7 @@
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
     }
 
-    /* Game container is now z-index 1002, above warp and title */
+    /* Game container (z-index 1002) */
     #game-container {
       display: none;
       border: 2px solid silver;
@@ -316,7 +322,7 @@
   </div>
   
   <script>
-    // --- Secret Click Logic on Title ---
+    // --- Secret Title Click Logic ---
     let secretClicks = 0;
     function trackTitleClicks() {
       secretClicks++;
@@ -355,7 +361,6 @@
     
     // --- Menu Event Listeners ---
     playButton.addEventListener("click", function() {
-      // Only allow access if secretUnlocked is set
       if (localStorage.getItem("secretUnlocked") === "true") {
         playButton.style.display = "none";
         difficultyContainer.style.display = "flex";
@@ -514,7 +519,7 @@
       toggleFlag(row, col);
     }
     
-    // Global keydown: use the cell that is currently hovered over.
+    // Global keydown: act on the cell that is currently hovered over.
     document.addEventListener("keydown", function(event) {
       const hovered = document.querySelector(".cell:hover");
       if (!hovered || gameOver) return;
@@ -659,8 +664,8 @@
       startStopwatch();
     }
     
-    // Start game on page load if a difficulty has been chosen (menu remains until then)
-    // (The game will start when a difficulty button is clicked.)
+    // --- Start Game When Difficulty is Chosen ---
+    // (Game starts when a difficulty button is clicked from the menu.)
   </script>
 </body>
 </html>
