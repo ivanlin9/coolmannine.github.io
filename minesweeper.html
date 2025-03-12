@@ -6,6 +6,7 @@
   <title>Sweeper</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Digital+Seven&display=swap');
 
     * {
       margin: 0;
@@ -130,11 +131,68 @@
       }
     }
 
+    /* Menu screen */
+    #menu-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1002;
+    }
+
+    #play-button {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3rem;
+      background: linear-gradient(45deg, #333, #666);
+      color: white;
+      border: 3px solid silver;
+      border-radius: 15px;
+      padding: 20px 60px;
+      cursor: pointer;
+      margin-bottom: 40px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #play-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+
+    #difficulty-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .difficulty-button {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      background: linear-gradient(45deg, #222, #555);
+      color: white;
+      border: 2px solid silver;
+      border-radius: 10px;
+      padding: 15px 40px;
+      cursor: pointer;
+      width: 250px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .difficulty-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    }
+
     /* Game container is now z-index 1002, above warp and title */
     #game-container {
-      opacity: 0;
-      animation: game-appear 1s 6s forwards;
-      display: inline-block;
+      display: none;
       border: 2px solid silver;
       padding: 10px;
       position: absolute;
@@ -145,25 +203,45 @@
       z-index: 1002;
     }
 
-    @keyframes game-appear {
-      to {
-        opacity: 1;
-      }
-    }
-
-    .controls {
-      margin-bottom: 10px;
+    /* Game header with counters and reset button */
+    .game-header {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
+      margin-bottom: 10px;
+      padding: 5px;
+      background-color: #333;
+      border: 2px solid #666;
     }
 
-    /* Stopwatch styling */
-    #stopwatch {
+    /* Digital counter styling */
+    .digital-counter {
+      font-family: 'Digital Seven', monospace;
       color: red;
-      font-family: monospace;
-      font-size: 1.5rem;
-      margin-bottom: 10px;
+      font-size: 2rem;
+      background-color: black;
+      padding: 5px 10px;
+      border: 1px solid #555;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    /* Reset button styling */
+    #reset-button {
+      font-size: 1.8rem;
+      background: #ddd;
+      border: 2px solid #999;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    #reset-button:hover {
+      background: #ccc;
     }
 
     #grid {
@@ -218,54 +296,143 @@
   </div>
   <div id="title">Sweeper</div>
 
+  <!-- Menu screen -->
+  <div id="menu-container">
+    <button id="play-button">PLAY</button>
+    <div id="difficulty-container">
+      <button class="difficulty-button" data-difficulty="easy">EASY</button>
+      <button class="difficulty-button" data-difficulty="intermediate">INTERMEDIATE</button>
+      <button class="difficulty-button" data-difficulty="expert">EXPERT</button>
+    </div>
+  </div>
+
   <div id="game-container">
-    <div class="controls">
-      <button onclick="resetGame()">New Game</button>
-      <div id="stopwatch">00:00:00</div>
+    <div class="game-header">
+      <div id="mine-counter" class="digital-counter">040</div>
+      <div id="reset-button">😊</div>
+      <div id="stopwatch" class="digital-counter">000</div>
     </div>
     <div id="grid"></div>
   </div>
   
   <script>
-    // Game Variables
-    const rows = 16;
-    const cols = 16;
-    const minesCount = 40;
+    // --- Secret Click Logic on Title ---
+    let secretClicks = 0;
+    function trackTitleClicks() {
+      secretClicks++;
+      if (secretClicks === 4) {
+        localStorage.setItem("secretUnlocked", "true");
+      } else if (secretClicks > 4) {
+        secretClicks = 0;
+        localStorage.removeItem("secretUnlocked");
+      }
+    }
+    document.getElementById("title").addEventListener("click", trackTitleClicks);
+
+    // --- Game Variables ---
+    let rows = 16;
+    let cols = 16;
+    let minesCount = 40;
     let grid = [];
     let revealedCount = 0;
     let gameOver = false;
+    let flaggedCount = 0;
     
-    // Stopwatch Variables
+    // --- Stopwatch Variables ---
     let stopwatchInterval;
     let startTime;
+    let currentSeconds = 0;
+
+    // --- DOM Elements ---
+    const playButton = document.getElementById("play-button");
+    const difficultyContainer = document.getElementById("difficulty-container");
+    const menuContainer = document.getElementById("menu-container");
+    const gameContainer = document.getElementById("game-container");
+    const gridElement = document.getElementById("grid");
+    const mineCounter = document.getElementById("mine-counter");
+    const resetButton = document.getElementById("reset-button");
+    const stopwatchElement = document.getElementById("stopwatch");
     
-    // Start or restart the stopwatch
-    function startStopwatch() {
-      clearInterval(stopwatchInterval);
-      startTime = Date.now();
-      stopwatchInterval = setInterval(function(){
-        const elapsed = Date.now() - startTime;
-        const minutes = Math.floor(elapsed / 60000);
-        const seconds = Math.floor((elapsed % 60000) / 1000);
-        const centiseconds = Math.floor((elapsed % 1000) / 10);
-        document.getElementById("stopwatch").textContent =
-          (minutes < 10 ? "0" + minutes : minutes) + ":" +
-          (seconds < 10 ? "0" + seconds : seconds) + ":" +
-          (centiseconds < 10 ? "0" + centiseconds : centiseconds);
-      }, 10);
+    // --- Menu Event Listeners ---
+    playButton.addEventListener("click", function() {
+      // Only allow access if secretUnlocked is set
+      if (localStorage.getItem("secretUnlocked") === "true") {
+        playButton.style.display = "none";
+        difficultyContainer.style.display = "flex";
+      } else {
+        alert("Secret not unlocked! Click the title exactly 4 times to unlock Sweeper.");
+      }
+    });
+    
+    document.querySelectorAll(".difficulty-button").forEach(button => {
+      button.addEventListener("click", function() {
+        const difficulty = this.getAttribute("data-difficulty");
+        setupGame(difficulty);
+        menuContainer.style.display = "none";
+        gameContainer.style.display = "block";
+      });
+    });
+    
+    resetButton.addEventListener("click", resetGame);
+    
+    // --- Game Setup ---
+    function setupGame(difficulty) {
+      switch (difficulty) {
+        case "easy":
+          rows = 9;
+          cols = 9;
+          minesCount = 10;
+          break;
+        case "intermediate":
+          rows = 16;
+          cols = 16;
+          minesCount = 40;
+          break;
+        case "expert":
+          rows = 16;
+          cols = 30;
+          minesCount = 99;
+          break;
+      }
+      
+      createGrid();
+      startStopwatch();
+      updateMineCounter();
     }
     
-    // Stop the stopwatch
+    // --- Stopwatch Functions ---
+    function startStopwatch() {
+      currentSeconds = 0;
+      stopwatchElement.textContent = padNumber(currentSeconds, 3);
+      clearInterval(stopwatchInterval);
+      stopwatchInterval = setInterval(function() {
+        currentSeconds++;
+        if (currentSeconds > 999) currentSeconds = 999;
+        stopwatchElement.textContent = padNumber(currentSeconds, 3);
+      }, 1000);
+    }
+    
     function stopStopwatch() {
       clearInterval(stopwatchInterval);
     }
     
-    // Create and initialize the grid
+    function padNumber(num, length) {
+      return String(num).padStart(length, '0');
+    }
+    
+    function updateMineCounter() {
+      const remaining = minesCount - flaggedCount;
+      mineCounter.textContent = padNumber(remaining, 3);
+    }
+    
+    // --- Create Grid ---
     function createGrid() {
       grid = [];
       revealedCount = 0;
+      flaggedCount = 0;
       gameOver = false;
-      const gridElement = document.getElementById("grid");
+      resetButton.textContent = "😊";
+      
       gridElement.innerHTML = "";
       gridElement.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
       
@@ -294,7 +461,7 @@
       calculateNumbers();
     }
     
-    // Randomly place mines on the grid
+    // --- Place Mines ---
     function placeMines() {
       let placed = 0;
       while (placed < minesCount) {
@@ -307,7 +474,7 @@
       }
     }
     
-    // Calculate the adjacent mine count for each cell
+    // --- Calculate Numbers ---
     function calculateNumbers() {
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
@@ -327,7 +494,7 @@
       }
     }
     
-    // Handle left-click on a cell (or chord if already revealed)
+    // --- Handle Clicks ---
     function handleClick(event) {
       const row = parseInt(event.currentTarget.getAttribute("data-row"));
       const col = parseInt(event.currentTarget.getAttribute("data-col"));
@@ -339,7 +506,6 @@
       }
     }
     
-    // Handle right-click to toggle flag
     function handleRightClick(event) {
       event.preventDefault();
       const row = parseInt(event.currentTarget.getAttribute("data-row"));
@@ -365,7 +531,7 @@
       }
     });
     
-    // Reveal a cell; if it is empty, recursively reveal its neighbors.
+    // --- Reveal Cell ---
     function revealCell(row, col) {
       if (row < 0 || row >= rows || col < 0 || col >= cols) return;
       if (grid[row][col].revealed || grid[row][col].flagged) return;
@@ -400,29 +566,36 @@
       checkWin();
     }
     
-    // Toggle the flag on a cell.
+    // --- Toggle Flag ---
     function toggleFlag(row, col) {
       if (grid[row][col].revealed) return;
       grid[row][col].flagged = !grid[row][col].flagged;
       const cell = grid[row][col].element;
       cell.classList.toggle("flag");
       cell.textContent = grid[row][col].flagged ? "🚩" : "";
+      flaggedCount = 0;
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          if (grid[i][j].flagged) flaggedCount++;
+        }
+      }
+      updateMineCounter();
     }
     
-    // Chord a revealed cell: if flagged neighbors = its number, reveal neighbors
+    // --- Chord Cell ---
     function chordCell(row, col) {
       if (!grid[row][col].revealed || grid[row][col].adjacentMines === 0) return;
-      let flaggedCount = 0;
+      let flaggedCountAround = 0;
       for (let x = -1; x <= 1; x++) {
         for (let y = -1; y <= 1; y++) {
           const ni = row + x;
           const nj = col + y;
           if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && grid[ni][nj].flagged) {
-            flaggedCount++;
+            flaggedCountAround++;
           }
         }
       }
-      if (flaggedCount === grid[row][col].adjacentMines) {
+      if (flaggedCountAround === grid[row][col].adjacentMines) {
         for (let x = -1; x <= 1; x++) {
           for (let y = -1; y <= 1; y++) {
             const ni = row + x;
@@ -437,14 +610,14 @@
       }
     }
     
-    // Check if all non-mine cells are revealed => win
+    // --- Check Win ---
     function checkWin() {
       if (revealedCount === rows * cols - minesCount) {
         endGame(true);
       }
     }
     
-    // Reveal all squares (when losing)
+    // --- Force Reveal All (on Loss) ---
     function forceRevealAll() {
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
@@ -452,7 +625,6 @@
             grid[i][j].revealed = true;
             const cell = grid[i][j].element;
             cell.classList.add("revealed");
-            // Remove any flag
             grid[i][j].flagged = false;
             cell.classList.remove("flag");
             if (grid[i][j].mine) {
@@ -469,7 +641,7 @@
       }
     }
     
-    // End the game
+    // --- End Game ---
     function endGame(won) {
       gameOver = true;
       stopStopwatch();
@@ -481,15 +653,14 @@
       }
     }
     
-    // Reset the game (also restarts the stopwatch)
+    // --- Reset Game ---
     function resetGame() {
       createGrid();
       startStopwatch();
     }
     
-    // Start the game on page load
-    createGrid();
-    startStopwatch();
+    // Start game on page load if a difficulty has been chosen (menu remains until then)
+    // (The game will start when a difficulty button is clicked.)
   </script>
 </body>
 </html>
