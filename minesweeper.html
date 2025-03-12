@@ -118,7 +118,7 @@
       }
     }
 
-    /* Title now moves up and ends at 5% from the top */
+    /* Title moves up and ends at 5% from the top */
     @keyframes title-move {
       0% {
         top: 50%;
@@ -132,7 +132,7 @@
       }
     }
 
-    /* Menu screen (z-index 1002) - fades in after 6s */
+    /* Menu screen (z-index 1002) - fades in after animations */
     #menu-container {
       display: flex;
       flex-direction: column;
@@ -322,34 +322,12 @@
   </div>
   
   <script>
-    // --- Secret Title Click Logic ---
-    let secretClicks = 0;
-    function trackTitleClicks() {
-      secretClicks++;
-      if (secretClicks === 4) {
-        localStorage.setItem("secretUnlocked", "true");
-      } else if (secretClicks > 4) {
-        secretClicks = 0;
-        localStorage.removeItem("secretUnlocked");
-      }
-    }
-    document.getElementById("title").addEventListener("click", trackTitleClicks);
-
-    // --- Game Variables ---
-    let rows = 16;
-    let cols = 16;
-    let minesCount = 40;
-    let grid = [];
-    let revealedCount = 0;
-    let gameOver = false;
-    let flaggedCount = 0;
+    // --- Secret Title Click Logic (from home.html) ---
+    // This code should be on your home page.
+    // For the Sweeper page, we assume the secret flag is already set in localStorage.
+    // If it is not set, the PLAY button will simply redirect to home.
     
-    // --- Stopwatch Variables ---
-    let stopwatchInterval;
-    let startTime;
-    let currentSeconds = 0;
-
-    // --- DOM Elements ---
+    // --- Menu Event Listeners ---
     const playButton = document.getElementById("play-button");
     const difficultyContainer = document.getElementById("difficulty-container");
     const menuContainer = document.getElementById("menu-container");
@@ -359,13 +337,15 @@
     const resetButton = document.getElementById("reset-button");
     const stopwatchElement = document.getElementById("stopwatch");
     
-    // --- Menu Event Listeners ---
     playButton.addEventListener("click", function() {
+      // Instead of showing an alert, if secret is not set, redirect to home.
       if (localStorage.getItem("secretUnlocked") === "true") {
+        // Optionally, clear the flag after successful access.
+        localStorage.removeItem("secretUnlocked");
         playButton.style.display = "none";
         difficultyContainer.style.display = "flex";
       } else {
-        alert("Secret not unlocked! Click the title exactly 4 times to unlock Sweeper.");
+        window.location.href = "/home.html";
       }
     });
     
@@ -379,6 +359,19 @@
     });
     
     resetButton.addEventListener("click", resetGame);
+    
+    // --- Game Variables ---
+    let rows = 16;
+    let cols = 16;
+    let minesCount = 40;
+    let grid = [];
+    let revealedCount = 0;
+    let gameOver = false;
+    let flaggedCount = 0;
+    
+    // --- Stopwatch Variables ---
+    let stopwatchInterval;
+    let currentSeconds = 0;
     
     // --- Game Setup ---
     function setupGame(difficulty) {
@@ -399,7 +392,6 @@
           minesCount = 99;
           break;
       }
-      
       createGrid();
       startStopwatch();
       updateMineCounter();
@@ -664,8 +656,7 @@
       startStopwatch();
     }
     
-    // --- Start Game When Difficulty is Chosen ---
-    // (Game starts when a difficulty button is clicked from the menu.)
+    // The game starts only after a difficulty button is clicked.
   </script>
 </body>
 </html>
