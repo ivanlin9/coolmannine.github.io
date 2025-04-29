@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0;url=/home.html">
-    <script>
-        window.location.href = "/home.html";
-    </script>
     <title>Redirecting...</title>
+    <script>
+      if (window.location.pathname === "/" || window.location.pathname === "/index.html") {
+          window.location.replace("/home.html");
+      }
+    </script>
 </head>
 <body>
     If you are not redirected automatically, follow this <a href='/home.html'>link to the homepage</a>.
