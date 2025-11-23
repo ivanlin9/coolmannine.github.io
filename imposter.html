@@ -623,19 +623,33 @@
       }
 
       function pickImposters() {
+        const chosen = new Set();
+      
+        // 3.5% chance that EVERYONE is an imposter
+        const everyoneImposterRoll = Math.random() < 0.035;
+        if (everyoneImposterRoll) {
+          for (let i = 1; i <= playersCount; i++) {
+            chosen.add(i);
+          }
+          return chosen;
+        }
+      
+        // Normal behavior: pick impostersCount distinct players
         const availablePlayers = [];
         for (let i = 1; i <= playersCount; i++) {
           availablePlayers.push(i);
         }
-        const chosen = new Set();
+      
         for (let i = 0; i < impostersCount; i++) {
           const idx = Math.floor(Math.random() * availablePlayers.length);
           const p = availablePlayers[idx];
           chosen.add(p);
           availablePlayers.splice(idx, 1);
         }
+      
         return chosen;
       }
+
 
       function updateRoundInfo() {
         roundInfo.innerHTML = `Round <strong>${roundNumber}</strong>`;
